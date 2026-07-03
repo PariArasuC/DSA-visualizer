@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DSA Sorting Visualizer</title>
+<style>
+  :root {
+    --bg: #0b0c0e;
+    --panel: #171a23;
+    --accent: #4657ee;
+    --accent-2: #800202;
+    --compare: #0500fa;
+    --swap: #007013;
+    --sorted: #5eead4;
+    --bar: #3b4252;
+    --text: #e5e7eb;
+    --muted: #8b8fa3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+  .controls {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  select, button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #2a2f3d;
+    background: #1f2330;
+    color: var(--text);
+    cursor: pointer;
+  }
+  button {
+    background: var(--accent);
+    color: #0f1117;
+    font-weight: 600;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid #2a2f3d;
+  }
+  input[type="range"] { width: 130px; }
+  #bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 360px;
+    width: 100%;
+    max-width: 900px;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .bar {
+    background: var(--bar);
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    transition: background 0.1s;
+  }
+  .bar.compare { background: var(--compare); }
+  .bar.swap { background: var(--swap); }
+  .bar.sorted { background: var(--sorted); }
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<h1>Sorting Visualizer</h1>
+<div class="subtitle">Watch bubble sort, selection sort, and quick sort compare and swap in real time.</div>
+
+<div class="controls">
+  <div class="control-group">
+    Algorithm
+    <select id="algoSelect">
+      <option value="bubble">Bubble Sort</option>
+      <option value="selection">Selection Sort</option>
+      <option value="quick">Quick Sort</option>
+    </select>
+  </div>
+  <div class="control-group">
+    Array Size: <span id="sizeLabel">40</span>
+    <input type="range" id="sizeSlider" min="10" max="100" value="40">
+  </div>
+  <div class="control-group">
+    Speed
+    <input type="range" id="speedSlider" min="1" max="100" value="60">
+  </div>
+  <button id="newArrayBtn" class="secondary">New Array</button>
+  <button id="startBtn">Start</button>
+</div>
+
+<div id="bars"></div>
+
+<div class="legend">
+  <span><i class="dot" style="background:var(--bar)"></i> Unsorted</span>
+  <span><i class="dot" style="background:var(--compare)"></i> Comparing</span>
+  <span><i class="dot" style="background:var(--swap)"></i> Swapping</span>
+  <span><i class="dot" style="background:var(--sorted)"></i> Sorted</span>
+</div>
+
+<script>
+let array = [];
+let isSorting = false;
+
+const barsEl = document.getElementById('bars');
+const sizeSlider = document.getElementById('sizeSlider');
+const speedSlider = document.getElementById('speedSlider');
+const sizeLabel = document.getElementById('sizeLabel');
+const algoSelect = document.getElementById('algoSelect');
+const newArrayBtn = document.getElementById('newArrayBtn');
+const startBtn = document.getElementById('startBtn');
+
+// ---- Step 5: generate & render the array ----
+function generateArray() {
+  const size = parseInt(sizeSlider.value);
+  array = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 5);
+  renderBars();
+}
+
+function renderBars(states = {}) {
+  barsEl.innerHTML = '';
+  array.forEach((value, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    if (states.sorted && states.sorted.has(i)) bar.classList.add('sorted');
+    if (states.compare && states.compare.includes(i)) bar.classList.add('compare');
+    if (states.swap && states.swap.includes(i)) bar.classList.add('swap');
+    bar.style.height = value + '%';
+    barsEl.appendChild(bar);
+  });
+}
+
+// ---- Step 7: delay helper for animation ----
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+function getDelay() {
+  // higher slider value = faster = shorter delay
+  return 210 - (speedSlider.value * 2);
+}
+
+// ---- Step 6: Bubble Sort ----
+async function bubbleSort() {
+  const n = array.length;
+  const sorted = new Set();
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      renderBars({ compare: [j, j + 1], sorted });
+      await sleep(getDelay());
+      if (array[j] > array[j + 1]) {
+        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+        renderBars({ swap: [j, j + 1], sorted });
+        await sleep(getDelay());
+      }
+    }
+    sorted.add(n - i - 1);
+  }
+  renderBars({ sorted: new Set(array.map((_, i) => i)) });
+}
+
+// ---- Selection Sort ----
+async function selectionSort() {
+  const n = array.length;
+  const sorted = new Set();
+  for (let i = 0; i < n; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < n; j++) {
+      renderBars({ compare: [minIdx, j], sorted });
+      await sleep(getDelay());
+      if (array[j] < array[minIdx]) minIdx = j;
+    }
+    if (minIdx !== i) {
+      [array[i], array[minIdx]] = [array[minIdx], array[i]];
+      renderBars({ swap: [i, minIdx], sorted });
+      await sleep(getDelay());
+    }
+    sorted.add(i);
+  }
+  renderBars({ sorted: new Set(array.map((_, i) => i)) });
+}
+
+// ---- Quick Sort ----
+async function quickSort(lo = 0, hi = array.length - 1, sorted = new Set()) {
+  if (lo < hi) {
+    const p = await partition(lo, hi, sorted);
+    await quickSort(lo, p - 1, sorted);
+    await quickSort(p + 1, hi, sorted);
+  } else if (lo === hi) {
+    sorted.add(lo);
+  }
+  if (lo === 0 && hi === array.length - 1) {
+    renderBars({ sorted: new Set(array.map((_, i) => i)) });
+  }
+}
+async function partition(lo, hi, sorted) {
+  const pivot = array[hi];
+  let i = lo - 1;
+  for (let j = lo; j < hi; j++) {
+    renderBars({ compare: [j, hi], sorted });
+    await sleep(getDelay());
+    if (array[j] < pivot) {
+      i++;
+      [array[i], array[j]] = [array[j], array[i]];
+      renderBars({ swap: [i, j], sorted });
+      await sleep(getDelay());
+    }
+  }
+  [array[i + 1], array[hi]] = [array[hi], array[i + 1]];
+  renderBars({ swap: [i + 1, hi], sorted });
+  await sleep(getDelay());
+  sorted.add(i + 1);
+  return i + 1;
+}
+
+// ---- Controls ----
+sizeSlider.addEventListener('input', () => {
+  sizeLabel.textContent = sizeSlider.value;
+  if (!isSorting) generateArray();
+});
+newArrayBtn.addEventListener('click', () => {
+  if (!isSorting) generateArray();
+});
+startBtn.addEventListener('click', async () => {
+  if (isSorting) return;
+  isSorting = true;
+  startBtn.disabled = true;
+  newArrayBtn.disabled = true;
+  sizeSlider.disabled = true;
+  algoSelect.disabled = true;
+
+  const algo = algoSelect.value;
+  if (algo === 'bubble') await bubbleSort();
+  else if (algo === 'selection') await selectionSort();
+  else if (algo === 'quick') await quickSort();
+
+  isSorting = false;
+  startBtn.disabled = false;
+  newArrayBtn.disabled = false;
+  sizeSlider.disabled = false;
+  algoSelect.disabled = false;
+});
+
+generateArray();
+</script>
+</body>
+</html>
