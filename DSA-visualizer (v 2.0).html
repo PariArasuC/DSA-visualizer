@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Sorting Visualizer</title></head>
+<body>
+  <button onclick="bubbleSort()">Start</button>
+<div id="bars"></div>
+  <script>let array = Array.from({ length: 20 }, () => Math.floor(Math.random() * 100) + 5);
+console.log(array);
+
+function renderBars() {
+  const barsEl = document.getElementById('bars');
+  barsEl.innerHTML = '';
+  array.forEach(value => {
+    const bar = document.createElement('div');
+    bar.style.height = value + 'px';
+    bar.style.width = '10px';
+    bar.style.background = 'gray';
+    bar.style.display = 'inline-block';
+    barsEl.appendChild(bar);
+  });
+}
+renderBars();
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function bubbleSort() {
+  for (let i = 0; i < array.length; i++) {
+    for (let j = 0; j < array.length - i - 1; j++) {
+      if (array[j] > array[j + 1]) {
+        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+      }
+      renderBars();
+      await sleep(50);
+    }
+  }
+}
+</script>
+</body>
+</html>
