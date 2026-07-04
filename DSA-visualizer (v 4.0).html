@@ -1,0 +1,501 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+.sv-app {
+  --bg: #0F1626;
+  --panel: #161F35;
+  --panel-alt: #1D2A47;
+  --border: #2A3A5C;
+  --text: #E7ECF7;
+  --text-dim: #8CA0C8;
+  --blue: #5B8DEF;
+  --amber: #F5A623;
+  --coral: #FF5C7A;
+  --green: #3ECF8E;
+  --violet: #B18CF0;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  border-radius: 18px;
+  padding: 28px;
+  max-width: 980px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.sv-app * { box-sizing: border-box; }
+.sv-mono { font-family: 'JetBrains Mono', monospace; }
+
+.sv-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.sv-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--blue); text-transform: uppercase; margin: 0 0 6px 0; }
+.sv-title { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+.sv-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--panel); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; display: flex; gap: 10px; align-items: center; }
+.sv-badge b { color: var(--amber); font-weight: 700; }
+
+.sv-algo-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.sv-pill { font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 600; background: var(--panel); color: var(--text-dim); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.sv-pill:hover { border-color: var(--blue); color: var(--text); }
+.sv-pill.active { background: var(--blue); color: #081026; border-color: var(--blue); }
+.sv-pill:disabled { opacity: .5; cursor: not-allowed; }
+
+.sv-desc { font-size: 12.5px; color: var(--text-dim); margin: -6px 0 18px 2px; min-height: 16px; }
+
+.sv-controls { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; }
+.sv-slider-group { display: flex; flex-direction: column; gap: 6px; min-width: 140px; flex: 1; }
+.sv-slider-label { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; display: flex; justify-content: space-between; }
+.sv-slider-label span:last-child { color: var(--amber); }
+input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--blue); cursor: pointer; border: 2px solid #081026; }
+input[type=range]:disabled::-webkit-slider-thumb { background: var(--text-dim); }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); cursor: pointer; border: 2px solid #081026; }
+
+.sv-btn-row { display: flex; gap: 8px; }
+.sv-btn { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 13.5px; border-radius: 10px; padding: 9px 16px; border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform .1s, background .15s; }
+.sv-btn:hover:not(:disabled) { background: var(--border); }
+.sv-btn:active:not(:disabled) { transform: scale(0.96); }
+.sv-btn:disabled { opacity: .4; cursor: not-allowed; }
+.sv-btn.sv-primary { background: var(--blue); color: #081026; border-color: var(--blue); }
+.sv-btn.sv-primary:hover:not(:disabled) { background: #4a7cdb; }
+
+.sv-stage { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px 16px 14px; margin-bottom: 14px; }
+.sv-bars { height: 300px; display: flex; align-items: flex-end; gap: 2px; }
+.sv-bar { flex: 1; background: var(--blue); border-radius: 3px 3px 0 0; position: relative; min-width: 2px; transition: background-color .12s ease; }
+.sv-bar.comparing { background: var(--amber); }
+.sv-bar.swapping { background: var(--coral); }
+.sv-bar.sorted { background: var(--green); }
+.sv-bar.pivot::after { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--violet); }
+.sv-bar.comparing::before, .sv-bar.swapping::before { content: ''; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: inherit; }
+
+@media (prefers-reduced-motion: reduce) { .sv-bar { transition: none; } }
+
+.sv-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.sv-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+.sv-swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+.sv-bottom-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.sv-stats { display: flex; gap: 14px; flex-wrap: wrap; flex: 1; min-width: 260px; }
+.sv-stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; flex: 1; min-width: 90px; }
+.sv-stat-label { font-size: 10.5px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+.sv-stat-value { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text); margin-top: 2px; }
+
+.sv-log { flex: 1.4; min-width: 260px; background: #0A101F; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; height: 108px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green); }
+.sv-log-line { opacity: 0; animation: sv-fade .2s forwards; white-space: pre-wrap; word-break: break-word; }
+@keyframes sv-fade { to { opacity: 1; } }
+.sv-log-cursor { display: inline-block; width: 6px; background: var(--green); animation: sv-blink 1s step-end infinite; }
+@keyframes sv-blink { 50% { opacity: 0; } }
+
+@media (max-width: 640px) {
+  .sv-app { padding: 18px; border-radius: 12px; }
+  .sv-title { font-size: 21px; }
+  .sv-bars { height: 220px; }
+  .sv-controls { flex-direction: column; align-items: stretch; }
+  .sv-btn-row { justify-content: space-between; }
+}
+</style>
+
+<div class="sv-app">
+  <div class="sv-header">
+    <div>
+      <p class="sv-eyebrow">DSA Visual Lab</p>
+      <h1 class="sv-title">Sorting Visualizer</h1>
+    </div>
+    <div class="sv-badge" id="sv-complexity">
+      <span>best <b id="sv-best">O(n)</b></span>
+      <span>avg <b id="sv-avg">O(n²)</b></span>
+      <span>worst <b id="sv-worst">O(n²)</b></span>
+      <span>space <b id="sv-space">O(1)</b></span>
+    </div>
+  </div>
+
+  <div class="sv-algo-row" id="sv-algo-row"></div>
+  <p class="sv-desc" id="sv-desc"></p>
+
+  <div class="sv-controls">
+    <div class="sv-slider-group">
+      <label class="sv-slider-label">Array size <span id="sv-size-val">40</span></label>
+      <input type="range" id="sv-size" min="8" max="120" value="40">
+    </div>
+    <div class="sv-slider-group">
+      <label class="sv-slider-label">Speed <span id="sv-speed-val">50</span></label>
+      <input type="range" id="sv-speed" min="1" max="100" value="55">
+    </div>
+    <div class="sv-btn-row">
+      <button class="sv-btn" id="sv-new">↺ New Array</button>
+      <button class="sv-btn" id="sv-step">⏭ Step</button>
+      <button class="sv-btn sv-primary" id="sv-play">▶ Play</button>
+      <button class="sv-btn" id="sv-reset">⟲ Reset</button>
+    </div>
+  </div>
+
+  <div class="sv-stage">
+    <div class="sv-bars" id="sv-bars"></div>
+    <div class="sv-legend">
+      <div class="sv-legend-item"><span class="sv-swatch" style="background:var(--blue)"></span>Default</div>
+      <div class="sv-legend-item"><span class="sv-swatch" style="background:var(--amber)"></span>Comparing</div>
+      <div class="sv-legend-item"><span class="sv-swatch" style="background:var(--coral)"></span>Swapping</div>
+      <div class="sv-legend-item"><span class="sv-swatch" style="background:var(--violet)"></span>Pivot</div>
+      <div class="sv-legend-item"><span class="sv-swatch" style="background:var(--green)"></span>Sorted</div>
+    </div>
+  </div>
+
+  <div class="sv-bottom-row">
+    <div class="sv-stats">
+      <div class="sv-stat"><div class="sv-stat-label">Comparisons</div><div class="sv-stat-value" id="sv-comparisons">0</div></div>
+      <div class="sv-stat"><div class="sv-stat-label">Swaps</div><div class="sv-stat-value" id="sv-swaps">0</div></div>
+      <div class="sv-stat"><div class="sv-stat-label">Time</div><div class="sv-stat-value" id="sv-time">0.0s</div></div>
+    </div>
+    <div class="sv-log" id="sv-log"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const COMPLEXITY = {
+    bubble:    { name:'Bubble Sort',    best:'O(n)',       avg:'O(n²)',       worst:'O(n²)',       space:'O(1)',     desc:'Repeatedly steps through the array, swapping adjacent elements that are out of order.' },
+    selection: { name:'Selection Sort', best:'O(n²)',      avg:'O(n²)',       worst:'O(n²)',       space:'O(1)',     desc:'Finds the minimum of the unsorted region each pass and moves it to the front.' },
+    insertion: { name:'Insertion Sort', best:'O(n)',       avg:'O(n²)',       worst:'O(n²)',       space:'O(1)',     desc:'Builds the sorted array one element at a time, inserting each into its correct spot.' },
+    merge:     { name:'Merge Sort',     best:'O(n log n)', avg:'O(n log n)', worst:'O(n log n)', space:'O(n)',     desc:'Recursively splits the array in half, sorts each half, then merges them back together.' },
+    quick:     { name:'Quick Sort',     best:'O(n log n)', avg:'O(n log n)', worst:'O(n²)',       space:'O(log n)', desc:'Partitions the array around a pivot, then recursively sorts each side.' },
+    heap:      { name:'Heap Sort',      best:'O(n log n)', avg:'O(n log n)', worst:'O(n log n)', space:'O(1)',     desc:'Builds a max-heap, then repeatedly extracts the largest element.' }
+  };
+
+  // ---------- Generators: each yields a step describing the array & what's happening ----------
+  function* bubbleSort(a, stats){
+    const n=a.length, sorted=new Set();
+    for(let i=0;i<n-1;i++){
+      let swapped=false;
+      for(let j=0;j<n-1-i;j++){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[j,j+1], swapping:[], sorted:[...sorted], log:`compare a[${j}] and a[${j+1}]`};
+        if(a[j]>a[j+1]){
+          [a[j],a[j+1]]=[a[j+1],a[j]]; stats.swaps++; swapped=true;
+          yield {array:a.slice(), comparing:[], swapping:[j,j+1], sorted:[...sorted], log:`swap a[${j}] <-> a[${j+1}]`};
+        }
+      }
+      sorted.add(n-1-i);
+      yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:`index ${n-1-i} locked`};
+      if(!swapped) break;
+    }
+    for(let k=0;k<n;k++) sorted.add(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:'done'};
+  }
+
+  function* selectionSort(a, stats){
+    const n=a.length, sorted=new Set();
+    for(let i=0;i<n-1;i++){
+      let min=i;
+      for(let j=i+1;j<n;j++){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[min,j], swapping:[], sorted:[...sorted], log:`compare min a[${min}] with a[${j}]`};
+        if(a[j]<a[min]) min=j;
+      }
+      if(min!==i){
+        [a[i],a[min]]=[a[min],a[i]]; stats.swaps++;
+        yield {array:a.slice(), comparing:[], swapping:[i,min], sorted:[...sorted], log:`swap a[${i}] <-> a[${min}]`};
+      }
+      sorted.add(i);
+      yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:`index ${i} locked`};
+    }
+    for(let k=0;k<n;k++) sorted.add(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:'done'};
+  }
+
+  function* insertionSort(a, stats){
+    const n=a.length, sorted=new Set([0]);
+    for(let i=1;i<n;i++){
+      let j=i;
+      while(j>0){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[j-1,j], swapping:[], sorted:[...sorted], log:`compare a[${j-1}] and a[${j}]`};
+        if(a[j-1]>a[j]){
+          [a[j-1],a[j]]=[a[j],a[j-1]]; stats.swaps++;
+          yield {array:a.slice(), comparing:[], swapping:[j-1,j], sorted:[...sorted], log:`shift left at ${j}`};
+          j--;
+        } else break;
+      }
+      sorted.add(i);
+      yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:`index ${i} inserted`};
+    }
+    for(let k=0;k<n;k++) sorted.add(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:'done'};
+  }
+
+  function* mergeSort(a, stats){
+    const n=a.length;
+    function* sort(lo,hi){
+      if(hi-lo<=1) return;
+      const mid=(lo+hi)>>1;
+      yield* sort(lo,mid);
+      yield* sort(mid,hi);
+      const left=a.slice(lo,mid), right=a.slice(mid,hi);
+      let i=0,j=0,k=lo;
+      while(i<left.length && j<right.length){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[lo+i, mid+j], swapping:[], sorted:[], log:`compare a[${lo+i}] and a[${mid+j}] (merge)`};
+        if(left[i]<=right[j]){ a[k]=left[i]; i++; } else { a[k]=right[j]; j++; }
+        stats.swaps++; k++;
+        yield {array:a.slice(), comparing:[], swapping:[k-1], sorted:[], log:`place at a[${k-1}]`};
+      }
+      while(i<left.length){ a[k]=left[i]; i++; k++; stats.swaps++; yield {array:a.slice(), comparing:[], swapping:[k-1], sorted:[], log:`place at a[${k-1}]`}; }
+      while(j<right.length){ a[k]=right[j]; j++; k++; stats.swaps++; yield {array:a.slice(), comparing:[], swapping:[k-1], sorted:[], log:`place at a[${k-1}]`}; }
+    }
+    yield* sort(0,n);
+    const sorted=[]; for(let k=0;k<n;k++) sorted.push(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted, log:'done'};
+  }
+
+  function* quickSort(a, stats){
+    const n=a.length, sorted=new Set();
+    function* qs(lo,hi){
+      if(lo>hi) return;
+      if(lo===hi){ sorted.add(lo); return; }
+      const pivotVal=a[hi];
+      let i=lo-1;
+      for(let j=lo;j<hi;j++){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[j,hi], swapping:[], sorted:[...sorted], pivot:hi, log:`compare a[${j}] with pivot a[${hi}]`};
+        if(a[j]<pivotVal){
+          i++;
+          if(i!==j){
+            [a[i],a[j]]=[a[j],a[i]]; stats.swaps++;
+            yield {array:a.slice(), comparing:[], swapping:[i,j], sorted:[...sorted], pivot:hi, log:`swap a[${i}] <-> a[${j}]`};
+          }
+        }
+      }
+      [a[i+1],a[hi]]=[a[hi],a[i+1]]; stats.swaps++;
+      sorted.add(i+1);
+      yield {array:a.slice(), comparing:[], swapping:[i+1,hi], sorted:[...sorted], pivot:null, log:`pivot settled at a[${i+1}]`};
+      yield* qs(lo,i);
+      yield* qs(i+2,hi);
+    }
+    yield* qs(0,n-1);
+    for(let k=0;k<n;k++) sorted.add(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], pivot:null, log:'done'};
+  }
+
+  function* heapSort(a, stats){
+    const n=a.length, sorted=new Set();
+    function* heapify(size, root){
+      let largest=root, l=2*root+1, r=2*root+2;
+      if(l<size){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[largest,l], swapping:[], sorted:[...sorted], log:`compare a[${largest}] and a[${l}]`};
+        if(a[l]>a[largest]) largest=l;
+      }
+      if(r<size){
+        stats.comparisons++;
+        yield {array:a.slice(), comparing:[largest,r], swapping:[], sorted:[...sorted], log:`compare a[${largest}] and a[${r}]`};
+        if(a[r]>a[largest]) largest=r;
+      }
+      if(largest!==root){
+        [a[root],a[largest]]=[a[largest],a[root]]; stats.swaps++;
+        yield {array:a.slice(), comparing:[], swapping:[root,largest], sorted:[...sorted], log:`swap a[${root}] <-> a[${largest}]`};
+        yield* heapify(size,largest);
+      }
+    }
+    for(let i=Math.floor(n/2)-1;i>=0;i--) yield* heapify(n,i);
+    for(let end=n-1; end>0; end--){
+      [a[0],a[end]]=[a[end],a[0]]; stats.swaps++;
+      sorted.add(end);
+      yield {array:a.slice(), comparing:[], swapping:[0,end], sorted:[...sorted], log:`move max to a[${end}]`};
+      yield* heapify(end,0);
+    }
+    for(let k=0;k<n;k++) sorted.add(k);
+    yield {array:a.slice(), comparing:[], swapping:[], sorted:[...sorted], log:'done'};
+  }
+
+  const GENERATORS = { bubble:bubbleSort, selection:selectionSort, insertion:insertionSort, merge:mergeSort, quick:quickSort, heap:heapSort };
+
+  // ---------- DOM refs ----------
+  const el = id => document.getElementById(id);
+  const barsEl = el('sv-bars'), algoRowEl = el('sv-algo-row'), descEl = el('sv-desc');
+  const sizeSlider = el('sv-size'), speedSlider = el('sv-speed'), sizeVal = el('sv-size-val'), speedVal = el('sv-speed-val');
+  const btnNew = el('sv-new'), btnStep = el('sv-step'), btnPlay = el('sv-play'), btnReset = el('sv-reset');
+  const statComparisons = el('sv-comparisons'), statSwaps = el('sv-swaps'), statTime = el('sv-time');
+  const logEl = el('sv-log');
+  const badgeBest = el('sv-best'), badgeAvg = el('sv-avg'), badgeWorst = el('sv-worst'), badgeSpace = el('sv-space');
+
+  // ---------- State ----------
+  let state = { arr:[], n:40, speed:55, algo:'bubble', gen:null, timerId:null, timeTimerId:null,
+                playing:false, done:false, stats:{comparisons:0,swaps:0}, startTs:0, pausedElapsed:0, maxVal:100 };
+  let barEls = [];
+  let logLines = [];
+
+  function speedToDelay(v){ return Math.max(4, Math.round(430 - v*4.2)); }
+
+  function buildAlgoRow(){
+    algoRowEl.innerHTML = '';
+    Object.keys(COMPLEXITY).forEach(key=>{
+      const b = document.createElement('button');
+      b.className = 'sv-pill' + (key===state.algo ? ' active' : '');
+      b.textContent = COMPLEXITY[key].name;
+      b.dataset.algo = key;
+      b.addEventListener('click', ()=>{
+        if(state.playing) return;
+        state.algo = key;
+        buildAlgoRow();
+        updateComplexityBadge();
+        resetSort();
+      });
+      algoRowEl.appendChild(b);
+    });
+  }
+
+  function updateComplexityBadge(){
+    const c = COMPLEXITY[state.algo];
+    badgeBest.textContent = c.best; badgeAvg.textContent = c.avg; badgeWorst.textContent = c.worst; badgeSpace.textContent = c.space;
+    descEl.textContent = c.desc;
+  }
+
+  function randomArray(n){
+    return Array.from({length:n}, ()=> 5 + Math.floor(Math.random()*95));
+  }
+
+  function buildBars(arr){
+    barsEl.innerHTML = '';
+    barEls = [];
+    state.maxVal = Math.max(...arr, 1);
+    arr.forEach(v=>{
+      const d = document.createElement('div');
+      d.className = 'sv-bar';
+      d.style.height = (v/state.maxVal*100) + '%';
+      d.title = v;
+      barsEl.appendChild(d);
+      barEls.push(d);
+    });
+  }
+
+  function pushLog(text){
+    logLines.push(text);
+    if(logLines.length>8) logLines.shift();
+    renderLog();
+  }
+  function renderLog(){
+    logEl.innerHTML = logLines.map(l => `<div class="sv-log-line">&gt; ${l}</div>`).join('') + '<span class="sv-log-cursor">&nbsp;</span>';
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function updateStep(step){
+    barEls.forEach(b => b.classList.remove('comparing','swapping','pivot'));
+    step.array.forEach((v,i)=>{ if(barEls[i]){ barEls[i].style.height = (v/state.maxVal*100)+'%'; barEls[i].title = v; } });
+    (step.comparing||[]).forEach(i => barEls[i] && barEls[i].classList.add('comparing'));
+    (step.swapping||[]).forEach(i => barEls[i] && barEls[i].classList.add('swapping'));
+    if(step.pivot!=null && barEls[step.pivot]) barEls[step.pivot].classList.add('pivot');
+    (step.sorted||[]).forEach(i => barEls[i] && barEls[i].classList.add('sorted'));
+    statComparisons.textContent = state.stats.comparisons;
+    statSwaps.textContent = state.stats.swaps;
+    if(step.log) pushLog(step.log);
+  }
+
+  function updateTimeDisplay(){
+    const elapsed = state.playing ? (Date.now()-state.startTs) : state.pausedElapsed;
+    statTime.textContent = (elapsed/1000).toFixed(1) + 's';
+  }
+
+  function updateControlsDisabled(){
+    const midSort = !!state.gen && !state.done;
+    sizeSlider.disabled = midSort;
+    speedSlider.disabled = false;
+    btnNew.disabled = state.playing;
+    document.querySelectorAll('.sv-pill').forEach(b => b.disabled = state.playing);
+    btnStep.disabled = state.playing || state.done;
+    btnReset.disabled = !state.gen && !state.done;
+    btnPlay.disabled = state.done;
+    btnPlay.innerHTML = state.playing ? '⏸ Pause' : '▶ Play';
+  }
+
+  function ensureGenerator(){
+    if(!state.gen){
+      state.stats = {comparisons:0,swaps:0};
+      logLines = [];
+      pushLog(`starting ${COMPLEXITY[state.algo].name}`);
+      state.gen = GENERATORS[state.algo](state.arr.slice(), state.stats);
+      state.startTs = Date.now();
+      state.pausedElapsed = 0;
+    }
+  }
+
+  function finishSort(){
+    state.playing = false; state.done = true;
+    clearInterval(state.timerId); clearInterval(state.timeTimerId);
+    barEls.forEach(b => { b.classList.remove('comparing','swapping','pivot'); b.classList.add('sorted'); });
+    statComparisons.textContent = state.stats.comparisons;
+    statSwaps.textContent = state.stats.swaps;
+    pushLog('sorted ✔');
+    updateControlsDisabled();
+  }
+
+  function tick(){
+    const { value, done } = state.gen.next();
+    if(done){ finishSort(); return; }
+    updateStep(value);
+  }
+
+  function play(){
+    if(state.done || state.playing) return;
+    ensureGenerator();
+    state.playing = true;
+    state.startTs = Date.now() - state.pausedElapsed;
+    state.timerId = setInterval(tick, speedToDelay(state.speed));
+    state.timeTimerId = setInterval(updateTimeDisplay, 100);
+    updateControlsDisabled();
+  }
+
+  function pause(){
+    if(!state.playing) return;
+    state.playing = false;
+    clearInterval(state.timerId); clearInterval(state.timeTimerId);
+    state.pausedElapsed = Date.now() - state.startTs;
+    updateControlsDisabled();
+  }
+
+  function stepOnce(){
+    if(state.playing || state.done) return;
+    ensureGenerator();
+    const { value, done } = state.gen.next();
+    if(done){ finishSort(); return; }
+    updateStep(value);
+    state.pausedElapsed = Date.now() - state.startTs;
+    updateTimeDisplay();
+    updateControlsDisabled();
+  }
+
+  function resetSort(){
+    clearInterval(state.timerId); clearInterval(state.timeTimerId);
+    state.gen = null; state.playing = false; state.done = false; state.pausedElapsed = 0;
+    state.stats = {comparisons:0,swaps:0};
+    logLines = [];
+    pushLog('reset — ready when you are');
+    buildBars(state.arr);
+    statComparisons.textContent = '0'; statSwaps.textContent = '0'; statTime.textContent = '0.0s';
+    updateControlsDisabled();
+  }
+
+  function newArray(){
+    state.arr = randomArray(state.n);
+    resetSort();
+  }
+
+  // ---------- Wire events ----------
+  sizeSlider.addEventListener('input', () => { sizeVal.textContent = sizeSlider.value; });
+  sizeSlider.addEventListener('change', () => { state.n = parseInt(sizeSlider.value,10); newArray(); });
+  speedSlider.addEventListener('input', () => {
+    speedVal.textContent = speedSlider.value;
+    state.speed = parseInt(speedSlider.value,10);
+    if(state.playing){ clearInterval(state.timerId); state.timerId = setInterval(tick, speedToDelay(state.speed)); }
+  });
+  btnNew.addEventListener('click', newArray);
+  btnStep.addEventListener('click', stepOnce);
+  btnPlay.addEventListener('click', () => state.playing ? pause() : play());
+  btnReset.addEventListener('click', resetSort);
+
+  // ---------- Init ----------
+  buildAlgoRow();
+  updateComplexityBadge();
+  state.n = parseInt(sizeSlider.value,10);
+  state.speed = parseInt(speedSlider.value,10);
+  newArray();
+})();
+</script>
+11
