@@ -2,7 +2,7 @@
 
 An interactive "Data Structures and Algorithms (DSA) Visualizer" that helps users understand how algorithms work through step-by-step visual representations.
 
-This repository contains three versions of the DSA Visualizer, each built to demonstrate progressive improvements. The first version focuses on the basic implementation to help understand the core concepts. The second version enhances the experience by adding animations that visualize each step of the sorting process. The third version features a modern, user-friendly interface with improved visuals and additional sorting algorithms, providing a more interactive and engaging learning experience.
+This repository contains four versions of the DSA Visualizer, each built to demonstrate progressive improvements. The first version focuses on the basic implementation to help understand the core concepts. The second version enhances the experience by adding animations that visualize each step of the sorting process. The third and fourth version features a modern, user-friendly interface with improved visuals and additional sorting algorithms, providing a more interactive and engaging learning experience.
 
 
 ## Features
